@@ -1,0 +1,31 @@
+body {
+    margin: 0;
+}
+
+nav {
+    display: flex;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+ul {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    justify-content: center;
+    list-style: none;
+}
+
+li {
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    transition: transform ease-in-out 200ms;
+}
+
+a {
+    font-family: fantasy;
+    color: white;
+    text-decoration: none;
+}
