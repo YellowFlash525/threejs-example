@@ -34,6 +34,7 @@ class ThanosPortal extends Component {
 		this.mountRef.current.appendChild( this.renderer.domElement );
 
 		this.loadPortalParticles();
+		this.portalAnimation();
 	};
 
 	loadPortalParticles() {
@@ -84,25 +85,22 @@ class ThanosPortal extends Component {
 		});
 	}
 
-	portalAnimation(animationFlag) {
-		if (animationFlag) {
-			let delta = this.clock.getDelta();
-			this.portalParticles.forEach(particles => {
-				particles.rotation.z -= delta * 1.5;
-			});
-			this.smokeParticles.forEach(particles => {
-				particles.rotation.z -= delta * 0.2;
-			});
+	portalAnimation() {
+		let delta = this.clock.getDelta();
 
-			if (Math.random() > 0.9) {
-				this.portalLight.power = 350 + Math.random() * 500;
-			}
+		this.portalParticles.forEach(particles => {
+			particles.rotation.z -= delta * 1.5;
+		});
+		this.smokeParticles.forEach(particles => {
+			particles.rotation.z -= delta * 0.2;
+		});
 
-			this.renderer.render(this.scene, this.cam);
-			this.animationID = requestAnimationFrame(this.portalAnimation.bind(this));
-		} else {
-			cancelAnimationFrame(this.animationID);
+		if (Math.random() > 0.9) {
+			this.portalLight.power = 350 + Math.random() * 500;
 		}
+
+		this.renderer.render(this.scene, this.cam);
+		this.animationID = requestAnimationFrame(this.portalAnimation.bind(this));
 	}
 
 	render() {
@@ -110,8 +108,6 @@ class ThanosPortal extends Component {
 			<div
 				style={{ width: '100%', height: '100%' }}
 				ref={ this.mountRef }
-				onMouseEnter={ () => this.portalAnimation(true) }
-				onMouseLeave={ () => this.portalAnimation(false) }
 			/>
 		);
 	}

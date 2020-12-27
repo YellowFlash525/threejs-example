@@ -1,43 +1,37 @@
-import React, { Component } from 'react';
+import React, { useRef, useEffect } from 'react';
 import * as THREE from "three";
 
-class NightSky extends Component { 
-	constructor(props) {
-		super(props);
+const NightSky = () => {
+	const scene = new THREE.Scene();
+	const sceneLight = new THREE.DirectionalLight(0xffffff, 0.5);
+	const moonLight = new THREE.PointLight(0x451C23, 60, 600, 2);
+	const cam = new THREE.PerspectiveCamera(80, window.innerWidth/ window.innerHeight, 1, 10000);
+	const renderer = new THREE.WebGLRenderer();
+	const cloudParticles = [];
+	const mountRef = useRef();
 
-		this.scene = new THREE.Scene();
-        this.clock = new THREE.Clock();
-        this.sceneLight = new THREE.DirectionalLight(0xffffff, 0.5);
-        this.moonLight = new THREE.PointLight(0x451C23, 60, 600, 2);
-		this.cam = new THREE.PerspectiveCamera(80, window.innerWidth/ window.innerHeight, 1, 10000);
-		this.renderer = new THREE.WebGLRenderer();
-
-		this.cloudParticles = [];
-		this.animationID = '';
-		this.mountRef = React.createRef();
-	}
-
-	componentDidMount() {
-		this.sceneLight.position.set(0,0,1);
-        this.scene.add(this.sceneLight);
+	useEffect(() => {
+		sceneLight.position.set(0,0,1);
+        scene.add(sceneLight);
         
-        this.moonLight.position.set(0, 0, 100);
-		this.scene.add(this.moonLight);
+        moonLight.position.set(0, 0, 100);
+		scene.add(moonLight);
 
-		this.cam.position.z = 1500;
-		this.scene.add(this.cam);
+		cam.position.z = 1500;
+		scene.add(cam);
 
-		this.renderer.setClearColor(0x0A0B0D,1);
-		this.renderer.setSize(window.innerWidth , window.innerHeight);
+		renderer.setClearColor(0x0A0B0D,1);
+		renderer.setSize(window.innerWidth , window.innerHeight);
 
-        this.mountRef.current.appendChild(this.renderer.domElement);
+        mountRef.current.appendChild(renderer.domElement);
         
-        this.loadCloudParticles();
-        this.loadMoonParticles();
-    };
+        loadCloudParticles();
+		loadMoonParticles();
+		cloudAnimation();
+	}, [])
 
-    loadCloudParticles() {
-        let loader = new THREE.TextureLoader();
+    const loadCloudParticles = () => {
+        const loader = new THREE.TextureLoader();
 		loader.load('./assets/cloud2.png', (texture) => {
 			const cloudGeometry = new THREE.PlaneBufferGeometry(700,500);
 			const cloudMaterial = new THREE.MeshStandardMaterial({
@@ -55,24 +49,24 @@ class NightSky extends Component {
                         valueX * Math.random() * i,
                         valueY * Math.random() * i,
                         10 * Math.random() * i
-                    );
-                    this.cloudParticles.push(particle);
+					);
+					cloudParticles.push(particle);
                 } else {
                     particle.position.set(
                         valueY * Math.random() * i,
                         valueX * Math.random() * i,
                         10 * Math.random() * i
                     );
-                    this.cloudParticles.push(particle);
+					cloudParticles.push(particle);
                 }
 
-                this.scene.add(particle);
+                scene.add(particle);
 
                 valueY = -valueY;
                 valueX = -valueX;
             }
 
-			this.renderer.render(this.scene, this.cam);
+			renderer.render(scene, cam);
 		}, (xhr) => {
 			console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
 		},  () => {
@@ -80,7 +74,7 @@ class NightSky extends Component {
         });
     }
 
-    loadMoonParticles() {
+    const loadMoonParticles = () => {
         let loader = new THREE.TextureLoader();
         loader.load('./assets/moon2.png', (texture) => {
 			const moonGeometry = new THREE.PlaneBufferGeometry(1000,1000);
@@ -89,10 +83,10 @@ class NightSky extends Component {
 				transparent: true
             });
 
-            let particle = new THREE.Mesh(moonGeometry, portalMaterial);
+            const particle = new THREE.Mesh(moonGeometry, portalMaterial);
             particle.position.set(10, 50, 2);
-            this.scene.add(particle);
-			this.renderer.render(this.scene, this.cam);
+            scene.add(particle);
+			renderer.render(scene, cam);
 		}, (xhr) => {
 			console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
 		},  () => {
@@ -100,29 +94,21 @@ class NightSky extends Component {
 		});
     }
 
-    cloudAnimation(animationFlag) {
-		if (animationFlag) {
-			this.cloudParticles.forEach(particle => {
-				particle.position.x += 0.5 * 1.5;
-			});
+    const cloudAnimation = () => {
+		cloudParticles.forEach(particle => {
+			particle.position.x += 0.5 * 1.5;
+		});
 
-			this.renderer.render(this.scene, this.cam);
-			this.animationID = requestAnimationFrame(this.cloudAnimation.bind(this));
-		} else {
-			cancelAnimationFrame(this.animationID);
-		}
+		renderer.render(scene, cam);
+		requestAnimationFrame(cloudAnimation.bind(this));
 	}
 
-	render() {
-		return (
-			<div
-				style={{ width: '100%', height: '100%' }}
-                ref={ this.mountRef }
-                onMouseEnter={ () => this.cloudAnimation(true) }
-				onMouseLeave={ () => this.cloudAnimation(false) }
-			/>
-		);
-	}
+	return (
+		<div
+			style={{ width: '100%', height: '100%' }}
+			ref={ mountRef }
+		/>
+	);
 }
 
 export default NightSky;
